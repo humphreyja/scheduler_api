@@ -2,52 +2,81 @@
 
 namespace AppBundle\Entity;
 
+use Doctrine\ORM\Mapping as ORM;
+
 /**
  * Shift
+ *
+ * @ORM\Table(name="shift")
+ * @ORM\Entity(repositoryClass="AppBundle\Repository\ShiftRepository")
  */
 class Shift
 {
     /**
      * @var int
+     *
+     * @ORM\Column(name="id", type="integer")
+     * @ORM\Id
+     * @ORM\GeneratedValue(strategy="AUTO")
      */
     private $id;
 
     /**
      * @var int
-     * @ManyToOne(targetEntity="User")
-     * @JoinColumn(name="manager_id", referencedColumnName="id")
+     * @ORM\Column(name="manager_id", type="integer")
      */
     private $managerId;
 
     /**
+     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Users\Manager", inversedBy="shifts")
+     * @ORM\JoinColumn(name="manager_id", referencedColumnName="id")
+     */
+    private $manager;
+
+    /**
      * @var int
-     * @ManyToOne(targetEntity="User")
-     * @JoinColumn(name="employee_id", referencedColumnName="id")
+     * @ORM\Column(name="employee_id", type="integer", nullable=true)
      */
     private $employeeId;
 
     /**
+     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Users\Employee", inversedBy="shifts")
+     * @ORM\JoinColumn(name="employee_id", referencedColumnName="id")
+     */
+    private $employee;
+
+    /**
      * @var float
+     *
+     * @ORM\Column(name="break", type="float")
      */
     private $break;
 
     /**
      * @var \DateTime
+     *
+     * @ORM\Column(name="start_time", type="datetime")
      */
     private $startTime;
 
     /**
      * @var \DateTime
+     *
+     * @ORM\Column(name="end_time", type="datetime")
      */
     private $endTime;
 
     /**
      * @var \DateTime
+     *
+     * @ORM\Column(name="created_at", type="datetime")
      */
     private $createdAt;
 
     /**
      * @var \DateTime
+     *
+     * @ORM\Column(name="updated_at", type="datetime")
      */
     private $updatedAt;
 

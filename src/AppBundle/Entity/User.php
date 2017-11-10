@@ -2,45 +2,64 @@
 
 namespace AppBundle\Entity;
 
+use Doctrine\ORM\Mapping as ORM;
+use AppBundle\Entity\Shift;
+use AppBundle\Entity\Users\Employee;
+use AppBundle\Entity\Users\Manager;
+
 /**
  * User
+ * @ORM\InheritanceType("SINGLE_TABLE")
+ * @ORM\DiscriminatorColumn(name="role", type="string")
+ * @ORM\DiscriminatorMap({"employee" = "AppBundle\Entity\Users\Employee", "manager" = "AppBundle\Entity\Users\Manager", "" = "User"})
+ * @ORM\Table(name="user")
+ * @ORM\Entity(repositoryClass="AppBundle\Repository\UserRepository")
  */
 class User
 {
     /**
      * @var int
+     *
+     * @ORM\Column(name="id", type="integer")
+     * @ORM\Id
+     * @ORM\GeneratedValue(strategy="AUTO")
      */
-    private $id;
+    protected $id;
 
     /**
      * @var string
+     *
+     * @ORM\Column(name="name", type="string", length=255)
      */
-    private $name;
+    protected $name;
 
     /**
      * @var string
+     *
+     * @ORM\Column(name="email", type="string", length=255, nullable=true)
      */
-    private $role;
+    protected $email;
 
     /**
      * @var string
+     *
+     * @ORM\Column(name="phone", type="string", length=255, nullable=true)
      */
-    private $email;
-
-    /**
-     * @var string
-     */
-    private $phone;
+    protected $phone;
 
     /**
      * @var \DateTime
+     *
+     * @ORM\Column(name="created_at", type="datetime")
      */
-    private $createdAt;
+    protected $createdAt;
 
     /**
      * @var \DateTime
+     *
+     * @ORM\Column(name="updated_at", type="datetime")
      */
-    private $updatedAt;
+    protected $updatedAt;
 
 
     /**
@@ -197,4 +216,3 @@ class User
         return $this->updatedAt;
     }
 }
-

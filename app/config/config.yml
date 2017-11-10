@@ -78,3 +78,9 @@ fos_rest:
         view_response_listener: 'force'
         formats:
             json: true
+
+jms_serializer:
+    handlers:
+        datetime:
+            default_format: "D, d M Y H:i:s O" # RFC2822
+            default_timezone: "UTC"
