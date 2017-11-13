@@ -1,0 +1,21 @@
+[
+    {
+        "id": "@integer@",
+        "manager": {
+            "id": "@integer@",
+            "name": "@string@",
+            "email": "@*@",
+            "phone": "@*@",
+            "created_at": "@string@.isDateTime()",
+            "updated_at": "@string@.isDateTime()",
+            "role": "manager"
+        },
+        "employee": "@*@",
+        "break": "@number@",
+        "start_time": "@string@.isDateTime()",
+        "end_time": "@string@.isDateTime()",
+        "created_at": "@string@.isDateTime()",
+        "updated_at": "@string@.isDateTime()"
+    },
+    "@...@"
+]

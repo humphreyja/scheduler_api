@@ -3,12 +3,20 @@
 namespace AppBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use JMS\Serializer\Annotation as JSON;
+use Symfony\Component\Validator\Constraints as Assert;
+use AppBundle\Validator\Constraints as SchedulerApiAssert;
 
 /**
  * Shift
  *
  * @ORM\Table(name="shift")
  * @ORM\Entity(repositoryClass="AppBundle\Repository\ShiftRepository")
+ * @ORM\HasLifecycleCallbacks
+ *
+ * @SchedulerApiAssert\RequiresStartTimeBeLessThanEndTime
+ *
+ * @JSON\ExclusionPolicy("all")
  */
 class Shift
 {
@@ -18,58 +26,90 @@ class Shift
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="AUTO")
+     * @JSON\Groups({"Default"})
+     * @JSON\Expose
      */
     private $id;
 
     /**
-     * @var int
-     * @ORM\Column(name="manager_id", type="integer")
-     */
-    private $managerId;
-
-    /**
      * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Users\Manager", inversedBy="shifts")
      * @ORM\JoinColumn(name="manager_id", referencedColumnName="id")
+     *
+     * @Assert\NotBlank()
+     *
+     * @JSON\MaxDepth(2)
+     * @JSON\Groups({"manager_details_group"})
+     * @JSON\Expose
      */
     private $manager;
 
     /**
      * @var int
-     * @ORM\Column(name="employee_id", type="integer", nullable=true)
+     *
+     * @ORM\Column(name="manager_id", type="integer")
      */
-    private $employeeId;
+    private $managerId;
 
     /**
      * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Users\Employee", inversedBy="shifts")
      * @ORM\JoinColumn(name="employee_id", referencedColumnName="id")
+     * @JSON\MaxDepth(1)
+     * @JSON\Groups({"employee_details_group"})
+     * @JSON\Expose
      */
     private $employee;
 
     /**
-     * @var float
+     * @var int
      *
+     * @ORM\Column(name="employee_id", type="integer")
+     */
+    private $employeeId;
+
+    /**
+     * @JSON\Groups({"same_shift_group"})
+     * @JSON\Expose
+     */
+    private $sameShiftEmployees;
+
+    /**
+     * @var float
      * @ORM\Column(name="break", type="float")
+     *
+     * @Assert\NotBlank()
+     *
+     * @JSON\Groups({"Default"})
+     * @JSON\Expose
      */
     private $break;
 
     /**
      * @var \DateTime
-     *
      * @ORM\Column(name="start_time", type="datetime")
+     *
+     * @Assert\NotBlank()
+     *
+     * @JSON\Groups({"Default"})
+     * @JSON\Expose
      */
     private $startTime;
 
     /**
      * @var \DateTime
-     *
      * @ORM\Column(name="end_time", type="datetime")
+     *
+     * @Assert\NotBlank()
+     *
+     * @JSON\Groups({"Default"})
+     * @JSON\Expose
      */
     private $endTime;
 
     /**
      * @var \DateTime
-     *
      * @ORM\Column(name="created_at", type="datetime")
+     * @JSON\Groups({"Default"})
+     * @JSON\Expose
      */
     private $createdAt;
 
@@ -77,6 +117,8 @@ class Shift
      * @var \DateTime
      *
      * @ORM\Column(name="updated_at", type="datetime")
+     * @JSON\Groups({"Default"})
+     * @JSON\Expose
      */
     private $updatedAt;
 
@@ -92,51 +134,88 @@ class Shift
     }
 
     /**
-     * Set managerId
+     * Set manager
      *
-     * @param integer $managerId
+     * @param Manager $manager
      *
      * @return Shift
      */
-    public function setManagerId($managerId)
+    public function setManager($manager)
     {
-        $this->managerId = $managerId;
+        $this->manager = $manager;
 
         return $this;
     }
 
     /**
-     * Get managerId
+     * Get manager
      *
-     * @return int
+     * @return Manager
      */
-    public function getManagerId()
+    public function getManager()
     {
-        return $this->managerId;
+        return $this->manager;
     }
 
     /**
-     * Set employeeId
+     * Set employee
      *
-     * @param integer $employeeId
+     * @param Employee $employee
      *
      * @return Shift
      */
-    public function setEmployeeId($employeeId)
+    public function setEmployee($employee)
     {
-        $this->employeeId = $employeeId;
+        $this->employee = $employee;
 
         return $this;
     }
 
     /**
-     * Get employeeId
+     * Get employee
      *
-     * @return int
+     * @return Employee
      */
-    public function getEmployeeId()
+    public function getEmployee()
     {
-        return $this->employeeId;
+        return $this->employee;
+    }
+
+    /**
+     * @JSON\Groups({"check_assignment_group"})
+     * @JSON\VirtualProperty()
+     */
+    public function isUnassigned()
+    {
+        if (empty($this->employee)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Sets the list of employees also working during this shift.
+     *
+     * @param [] $employees
+     *
+     * @return Shift
+     */
+    public function setSameShiftEmployees($employees)
+    {
+        $this->sameShiftEmployees = $employees;
+        return $this;
+    }
+
+    /**
+     * Not ORM based, this must be separately queried and set.  Otherwise it
+     * could cause potential issues of autoloading extra data.
+     *
+     * @return []
+     */
+    public function getSameShiftEmployees()
+    {
+        return $this->sameShiftEmployees;
     }
 
     /**
@@ -258,4 +337,19 @@ class Shift
     {
         return $this->updatedAt;
     }
+
+    /**
+     * Sets timestamps on create/update
+     *
+     * @ORM\PrePersist
+     * @ORM\PreUpdate
+     */
+     public function updatedTimestamps()
+     {
+         $this->setUpdatedAt(new \DateTime('now'));
+
+         if ($this->getCreatedAt() == null) {
+             $this->setCreatedAt(new \DateTime('now'));
+         }
+     }
 }

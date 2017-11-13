@@ -1,0 +1,8 @@
+[
+    {
+        "hours": "@integer@",
+        "week_start_date": "@string@.isDateTime()",
+        "week_end_date": "@string@.isDateTime()"
+    },
+    "@...@"
+]
